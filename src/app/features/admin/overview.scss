@@ -1,0 +1,252 @@
+.adm-welcome {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #f8e3eb;
+  background: linear-gradient(110deg, #fff0f4, #fff7f5 70%, #fffaf2);
+  border-radius: 14px;
+  padding: 30px 34px;
+  overflow: hidden;
+  margin-bottom: 25px;
+  position: relative;
+}
+.adm-welcome > div > span {
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: #a74c70;
+  font-weight: 700;
+}
+.adm-welcome h2 {
+  font-size: 26px;
+  line-height: 1.4;
+  letter-spacing: -0.5px;
+  margin: 10px 0;
+  color: #61354c;
+  font-weight: 700;
+}
+.adm-welcome h2 b {
+  color: #eaa7bb;
+  font-size: 30px;
+  margin-left: 10px;
+}
+.adm-welcome p {
+  font-size: 13px;
+  color: #8c5d73;
+  margin: 10px 0 18px;
+}
+.adm-welcome a {
+  color: #d94475;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 650;
+}
+.adm-welcome a app-icon {
+  width: 15px;
+  height: 15px;
+}
+.adm-welcome-art {
+  width: 265px;
+  height: 165px;
+  position: relative;
+  transform: rotate(3deg);
+  border: 9px solid white;
+  box-shadow: 0 8px 28px #ae697319;
+  border-radius: 7px;
+  margin-right: 20px;
+  flex-shrink: 0;
+}
+.adm-welcome-art > span {
+  position: absolute;
+  bottom: -20px;
+  right: 0;
+  background: white;
+  padding: 6px 15px;
+  font-style: italic;
+  font-size: 13px !important;
+  letter-spacing: 0 !important;
+}
+.adm-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 25px;
+}
+.adm-stat {
+  background: white;
+  border: 1px solid var(--adm-border);
+  border-radius: 14px;
+  box-shadow: var(--adm-shadow);
+  padding: 22px;
+  position: relative;
+}
+.adm-stat p {
+  font-size: 13px;
+  color: #68758a;
+  margin: 4px 0 12px;
+}
+.adm-stat > strong {
+  font-size: 30px;
+  font-variant-numeric: tabular-nums;
+  display: block;
+  letter-spacing: -1px;
+  font-weight: 700;
+}
+.adm-stat > small {
+  font-size: 11px;
+  color: #758197;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 15px;
+}
+.adm-stat > small app-icon {
+  width: 12px;
+  height: 12px;
+}
+.adm-stat-icon {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  width: 37px;
+  height: 37px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+}
+.adm-stat-icon app-icon {
+  width: 19px;
+  height: 19px;
+}
+.pink {
+  background: #fff0f5;
+  color: #ed5d8b;
+}
+.blue {
+  background: #eef4ff;
+  color: #7198dc;
+}
+.green {
+  background: #ecfaf4;
+  color: #5aac92;
+}
+.amber {
+  background: #fff8e8;
+  color: #d6ab53;
+}
+.adm-overview-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 22px;
+  margin-bottom: 22px;
+}
+.adm-task {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin: 0 24px;
+  padding: 15px 0;
+  border-bottom: 1px solid #f3f5f8;
+}
+.adm-task-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.adm-task-icon app-icon {
+  width: 17px;
+  height: 17px;
+}
+.adm-task strong {
+  font-size: 13px;
+  font-weight: 550;
+  display: block;
+}
+.adm-task small {
+  display: block;
+  font-size: 11px;
+  color: #758197;
+  margin-top: 4px;
+}
+.adm-task b {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 600;
+  color: #68758a;
+}
+.adm-revenue {
+  padding: 19px 24px;
+  background: #fcfcfe;
+}
+.adm-revenue p {
+  font-size: 11px;
+  color: #748096;
+  margin: 0 0 7px;
+}
+.adm-revenue strong {
+  font-size: 20px;
+  color: #247653;
+  font-weight: 650;
+}
+.adm-shortcuts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 0 24px 24px;
+}
+.adm-shortcuts a {
+  padding: 18px 12px;
+  border: 1px solid #f0f2f6;
+  border-radius: 9px;
+  background: #fff;
+}
+.adm-shortcuts app-icon {
+  color: #d98aa7;
+  width: 21px;
+  height: 21px;
+  display: block;
+  margin-bottom: 13px;
+}
+.adm-shortcuts strong {
+  font-size: 13px;
+  display: block;
+  font-weight: 550;
+}
+.adm-shortcuts small {
+  font-size: 11px;
+  color: #758197;
+  display: block;
+  margin-top: 6px;
+  line-height: 1.6;
+}
+.adm-activity {
+  padding: 0 24px 20px;
+}
+.adm-activity > div {
+  display: flex;
+  gap: 12px;
+}
+.adm-activity > div > span {
+  color: #edb6c9;
+  font-size: 25px;
+  line-height: 1.5;
+}
+.adm-activity p {
+  font-size: 11px;
+  color: #6b778b;
+  margin: 8px 0;
+}
+.adm-activity strong {
+  font-weight: 500;
+  color: #526078;
+}
+.adm-activity small {
+  display: block;
+  font-size: 11px;
+  color: #788497;
+  margin-top: 4px;
+}

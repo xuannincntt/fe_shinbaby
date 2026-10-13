@@ -1,0 +1,164 @@
+@if (data$ | async; as data) {
+  <div class="store-page home-page">
+    <div class="wide-shell">
+      @if (site.banners(data.home, 'home_hero'); as banners) {
+        @if (banners.length) {
+          @let banner = banners[heroSlide() % banners.length];
+          <section class="home-hero" [attr.aria-label]="banner.title">
+            <div class="mobile-hero">
+              <div>
+                <p>{{ site.text('home', 'heroEyebrow') }}</p>
+                <h1 style="white-space: pre-line">{{ site.text('home', 'heroTitle') }}</h1>
+                <span>{{ site.text('home', 'heroDescription') }}</span
+                ><a class="button pill" [href]="banner.targetUrl || '/san-pham'"
+                  >{{ site.text('home', 'heroButton') }} <app-icon name="arrow"
+                /></a>
+              </div>
+              <div>
+                <app-reference-art
+                  [src]="banner.mobileImageUrl || banner.imageUrl"
+                  [label]="banner.title || ''"
+                />
+              </div>
+            </div>
+            <app-reference-art
+              [src]="banner.imageUrl"
+              [label]="banner.title || ''"
+              [eager]="true"
+            /><a class="hero-buy" [href]="banner.targetUrl || '/san-pham'"
+              >{{ site.text('home', 'heroButton') }} <app-icon name="arrow"
+            /></a>
+            @if (banners.length > 1) {
+              <button
+                class="hero-prev"
+                (click)="heroSlide.set((heroSlide() - 1 + banners.length) % banners.length)"
+                aria-label="Banner trước"
+              >
+                ‹</button
+              ><button
+                class="hero-next"
+                (click)="heroSlide.set((heroSlide() + 1) % banners.length)"
+                aria-label="Banner tiếp theo"
+              >
+                ›
+              </button>
+            }
+          </section>
+        }
+      }
+      <app-trust-strip />
+    </div>
+    <div class="shell home-content">
+      @if (data.error) {
+        <p class="notice error" role="alert">{{ data.error }}</p>
+      }
+      <section class="store-section">
+        <div class="section-heading">
+          <h2>{{ site.text('home', 'categoryTitle') }}</h2>
+          <a routerLink="/danh-muc">Xem tất cả danh mục <app-icon name="arrow" /></a>
+        </div>
+        <div class="category-grid">
+          @for (category of data.categories.slice(0, 5); track category.id; let i = $index) {
+            <app-category-card
+              [category]="category"
+              [index]="i"
+              [count]="count(data.home, category.id)"
+            />
+          }
+        </div>
+      </section>
+      <section
+        class="store-section home-products-layout"
+        [class.with-sale]="!!data.home?.flashProduct"
+      >
+        <div class="home-featured">
+          <div class="section-heading">
+            <h2>
+              {{ site.text('home', 'featuredTitle') }}
+              <span class="heading-tag">♨ {{ site.text('home', 'featuredSubtitle') }}</span>
+            </h2>
+            <a routerLink="/san-pham" [queryParams]="{ sort: 'best_selling' }"
+              >Xem tất cả <app-icon name="arrow"
+            /></a>
+          </div>
+          <div class="product-grid home-product-grid">
+            @for (product of data.products; track product.id; let i = $index) {
+              <app-product-card [product]="product" [index]="i" [compact]="true" />
+            }
+          </div>
+        </div>
+        @if (data.home?.flashProduct; as product) {
+          <aside class="flash-sale">
+            <div class="sale-title">
+              <h2><app-icon name="bolt" />{{ site.text('home', 'flashTitle') }}</h2>
+              <small>Kết thúc sau</small>
+              @if (data.home; as home) {
+                @if (home.campaigns[0]; as campaign) {
+                  <app-countdown [endAt]="campaign.endAt" [serverTime]="home.serverTime" />
+                }
+              }
+            </div>
+            <div class="flash-body">
+              <a [routerLink]="['/san-pham', product.slug]" class="flash-image"
+                ><app-reference-art
+                  [src]="product.homeImage || product.imageUrl"
+                  [label]="product.name"
+                />
+                @if (
+                  product.price != null && product.basePrice && product.price < product.basePrice
+                ) {
+                  <span class="discount-badge"
+                    >-{{ 100 - (product.price / product.basePrice) * 100 | number: '1.0-0' }}%</span
+                  >
+                }
+              </a>
+              <div>
+                <a [routerLink]="['/san-pham', product.slug]" class="flash-name">{{
+                  product.name
+                }}</a>
+                <div class="card-price">
+                  <strong>{{ product.price | currency: 'VND' : 'symbol' : '1.0-0' : 'vi' }}</strong
+                  ><del>{{ product.basePrice | currency: 'VND' : 'symbol' : '1.0-0' : 'vi' }}</del>
+                </div>
+                <div class="sale-progress"><span></span></div>
+                <small
+                  >Đã bán {{ product.sold || 0 }}<br />{{ data.home?.campaigns?.[0]?.name }}</small
+                >
+              </div>
+            </div>
+            <a class="button full flash-buy" [routerLink]="['/san-pham', product.slug]"
+              ><app-icon name="bolt" />{{ site.text('home', 'flashButton') }}</a
+            >
+          </aside>
+        }
+      </section>
+      <section class="store-section home-reviews">
+        <div class="section-heading">
+          <h2>
+            <span class="yellow">★</span>{{ site.text('home', 'reviewsTitle') }}
+            <app-icon name="heart" /><small>{{ site.text('home', 'confidenceText') }}</small>
+          </h2>
+        </div>
+        <div class="review-grid">
+          @for (review of data.home?.reviews || []; track review.id) {
+            <article class="review-card">
+              <div class="review-avatar">
+                <app-reference-art [src]="review.avatar" [label]="review.customerName" />
+              </div>
+              <div class="review-copy">
+                <strong>{{ review.customerName }}</strong>
+                <div class="stars">
+                  {{ '★'.repeat(review.rating) }}{{ '☆'.repeat(5 - review.rating) }}
+                </div>
+                <p>“{{ review.content }}”</p>
+              </div>
+              <div class="review-photo">
+                <app-reference-art [src]="review.photo" label="Ảnh đánh giá" />
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+    </div>
+  </div>
+}

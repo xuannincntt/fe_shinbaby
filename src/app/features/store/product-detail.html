@@ -1,0 +1,438 @@
+<div class="store-page detail-page shell">
+  <div class="breadcrumb">
+    <a routerLink="/">Trang chủ</a><span>/</span><a routerLink="/san-pham">Sản phẩm</a
+    ><span>/</span>
+    @if (state$ | async; as state) {
+      <span>{{ state.detail?.product?.name || 'Chi tiết sản phẩm' }}</span>
+    }
+  </div>
+  @if (state$ | async; as state) {
+    @if (state.error) {
+      <div class="empty" role="alert">
+        <h1>Không tìm thấy sản phẩm</h1>
+        <p>{{ state.error }}</p>
+        <a class="button" routerLink="/san-pham">Xem sản phẩm khác</a>
+      </div>
+    }
+    @if (state.detail; as detail) {
+      <section class="product-detail">
+        <div class="gallery">
+          <div class="detail-main-image">
+            <button
+              class="gallery-zoom"
+              (click)="zoom.set(true)"
+              aria-label="Phóng to ảnh sản phẩm"
+            >
+              <app-reference-art
+                [src]="image() || detail.product.imageUrl || ''"
+                [label]="detail.product.name"
+                [eager]="true"
+              /></button
+            ><button class="gallery-prev" (click)="moveImage(-1)" aria-label="Ảnh trước">‹</button
+            ><button class="gallery-next" (click)="moveImage(1)" aria-label="Ảnh tiếp theo">
+              ›
+            </button>
+          </div>
+          <div class="thumbnails">
+            @for (media of imageMedia(detail); track media.id; let i = $index) {
+              <button
+                [class.active]="galleryIndex() === i"
+                (click)="selectImage(i)"
+                [attr.aria-label]="'Xem ảnh ' + (i + 1)"
+              >
+                <app-reference-art
+                  [src]="media.url"
+                  [label]="media.altText || detail.product.name"
+                />
+              </button>
+            }
+          </div>
+          @for (media of detail.media; track media.id) {
+            @if (media.mediaType === 'video') {
+              <video
+                [src]="media.url"
+                controls
+                preload="metadata"
+                style="width: 100%; max-height: 300px"
+                [attr.aria-label]="media.altText || detail.product.name"
+              ></video>
+            }
+          }
+        </div>
+        <div class="detail-copy">
+          <div class="detail-badges">
+            @if (detail.product.sold) {
+              <span>♨ Đã bán {{ detail.product.sold }}</span>
+            }
+            <span
+              ><app-icon name="shield" />
+              {{ detail.product.brand || site.text('brand', 'name') }}</span
+            >
+          </div>
+          <h1>{{ detail.product.name }}</h1>
+          <p class="detail-summary">{{ detail.product.shortDescription }}</p>
+          <div class="detail-meta">
+            <span class="stars">★★★★★</span><strong>{{ detail.product.rating }}</strong
+            ><span>({{ sold(detail.product.reviewCount || 0) }} đánh giá)</span><i></i
+            ><span>Đã bán {{ sold(detail.product.sold || 0) }}</span>
+          </div>
+          <div class="detail-price">
+            <strong>{{
+              selected()?.price ?? detail.product.price
+                | currency: 'VND' : 'symbol' : '1.0-0' : 'vi'
+            }}</strong
+            ><del>{{ basePrice(detail) | currency: 'VND' : 'symbol' : '1.0-0' : 'vi' }}</del>
+            @if (discount(detail) > 0) {
+              <span class="inline-discount">-{{ discount(detail) }}%</span>
+            }
+          </div>
+          <div class="detail-promo-strip">
+            @if (detail.product.freeShipping) {
+              <div>
+                <app-icon name="truck" /><span
+                  ><strong>Freeship</strong
+                  ><small>{{ site.data()?.trust?.items?.[0]?.description }}</small></span
+                >
+              </div>
+            }
+            @if (vouchers()[0]; as voucher) {
+              <button (click)="claimVoucher()">
+                <app-icon name="gift" /><span
+                  ><strong>{{ voucherTitle(voucher) }}</strong
+                  ><small>{{ voucher.name }}</small></span
+                >
+              </button>
+            }
+            @if (detail.product.gift) {
+              <div>
+                <app-icon name="gift" /><span
+                  ><strong>Quà tặng miễn phí</strong><small>Tặng kèm sản phẩm</small></span
+                >
+              </div>
+            }
+          </div>
+          @if (discount(detail) > 0) {
+            <div class="saving-note">
+              <app-icon name="shield" /> Tiết kiệm
+              {{
+                basePrice(detail) - (selected()?.price ?? detail.product.price ?? 0)
+                  | currency: 'VND' : 'symbol' : '1.0-0' : 'vi'
+              }}
+              so với giá gốc!
+            </div>
+          }
+          <div class="detail-choice">
+            <strong>{{ colors.length ? 'Màu sắc / Họa tiết' : 'Phiên bản' }}</strong
+            ><small>{{ colors[colorIndex()] }}</small>
+          </div>
+          <div class="color-options">
+            @for (color of colors; track color; let i = $index) {
+              <button
+                [class.active]="colorIndex() === i"
+                [attr.aria-label]="color"
+                [attr.aria-pressed]="colorIndex() === i"
+                (click)="pickColor(i, detail)"
+              >
+                <app-reference-art [src]="detail.product.imageUrl" [label]="color" />
+              </button>
+            }
+          </div>
+          @if (!colors.length && !sizes.length) {
+            <select
+              aria-label="Chọn phiên bản"
+              (change)="choose(detail.variants[+$any($event.target).value])"
+            >
+              @for (variant of detail.variants; track variant.id; let i = $index) {
+                <option [value]="i">{{ label(variant, state.extras?.options || []) }}</option>
+              }
+            </select>
+          }
+          <div class="detail-choice">
+            <strong>Size</strong
+            ><button class="text-button" (click)="tab.set('sizes')">Bảng size</button>
+          </div>
+          <div class="size-options">
+            @for (size of sizes; track size; let i = $index) {
+              <button
+                [class.active]="sizeIndex() === i"
+                [attr.aria-pressed]="sizeIndex() === i"
+                (click)="pickSize(i, detail)"
+              >
+                {{ size }}
+              </button>
+            }
+          </div>
+          @for (group of extraGroups; track group.code) {
+            <div class="detail-choice">
+              <strong>{{ group.name }}</strong>
+            </div>
+            <div class="size-options">
+              @for (value of group.values; track value) {
+                <button
+                  [class.active]="otherSelection()[group.code] === value"
+                  (click)="pickExtra(group.code, value, detail)"
+                >
+                  {{ value }}
+                </button>
+              }
+            </div>
+          }
+          <div class="purchase-row">
+            <strong>Số lượng</strong>
+            <div class="quantity-picker">
+              <button (click)="adjust(-1)" [disabled]="quantity() <= 1" aria-label="Giảm số lượng">
+                −</button
+              ><output>{{ quantity() }}</output
+              ><button
+                (click)="adjust(1)"
+                [disabled]="quantity() >= (selected()?.stockQty || 99)"
+                aria-label="Tăng số lượng"
+              >
+                +
+              </button>
+            </div>
+            <span class="stock teal"
+              ><app-icon name="check" /> {{ available() ? 'Còn hàng' : 'Chưa có sẵn' }}
+              <small>({{ selected()?.stockQty }} sản phẩm)</small></span
+            >
+          </div>
+          @if (message()) {
+            <p class="notice error" role="alert">{{ message() }}</p>
+          }
+          <div class="detail-buy-actions">
+            <button class="button secondary" [disabled]="!available()" (click)="add(detail)">
+              <app-icon name="cart" /> Thêm vào giỏ</button
+            ><button class="button" [disabled]="!available()" (click)="buyNow(detail)">
+              <app-icon name="bolt" /> Mua ngay
+            </button>
+          </div>
+          @if (buyUrl(detail)) {
+            <a
+              class="button secondary full"
+              [href]="buyUrl(detail)"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Mua tại kênh bán của shop ↗</a
+            >
+          }
+        </div>
+        <aside class="detail-sidebar">
+          @if (vouchers()[0]; as voucher) {
+            <section class="voucher-card">
+              <div>
+                <h3>Voucher từ {{ site.text('brand', 'name') }}</h3>
+                <a routerLink="/uu-dai">Xem tất cả ›</a>
+              </div>
+              <div class="voucher-ticket">
+                <app-icon name="gift" />
+                <div>
+                  <strong>{{ voucherTitle(voucher) }}</strong
+                  ><small
+                    >Đơn từ
+                    {{ voucher.minOrderAmount || 0 | currency: 'VND' : 'symbol' : '1.0-0' : 'vi' }}
+                    @if (voucher.maxDiscount) {
+                      <br />Tối đa
+                      {{ voucher.maxDiscount | currency: 'VND' : 'symbol' : '1.0-0' : 'vi' }}
+                    }
+                  </small>
+                </div>
+                <div>
+                  <button class="button" (click)="claimVoucher()">
+                    {{ cart.voucher() === voucher.code ? 'Đã nhận' : 'Nhận' }}</button
+                  ><small>{{ voucher.code }}</small>
+                </div>
+              </div>
+              @if (cart.voucher()) {
+                <small class="teal" role="status"
+                  >Đã lưu voucher {{ cart.voucher() }} vào giỏ hàng.</small
+                >
+              }
+            </section>
+          }
+          <section class="detail-policy-list">
+            @for (item of site.data()?.trust?.items || []; track $index) {
+              <a [href]="item.href"
+                ><app-icon [name]="item.icon" /><span
+                  ><strong>{{ item.title }}</strong
+                  ><small>{{ item.description }}</small></span
+                ></a
+              >
+            }
+            <div class="customer-confidence">
+              <app-icon name="heart" />
+              <div>
+                <strong>{{ site.text('home', 'confidenceText') }}</strong>
+                <p>{{ site.text('product', 'confidenceText') }}</p>
+              </div>
+            </div>
+          </section>
+        </aside>
+      </section>
+      <section class="detail-information">
+        <div class="detail-tabs" role="tablist" aria-label="Thông tin sản phẩm">
+          @for (item of tabs; track item.code) {
+            <button
+              role="tab"
+              [id]="'tab-' + item.code"
+              aria-controls="detail-panel"
+              [attr.aria-selected]="tab() === item.code"
+              [class.active]="tab() === item.code"
+              (click)="tab.set(item.code)"
+            >
+              {{ item.label }}
+              @if (item.code === 'reviews') {
+                ({{ sold(detail.product.reviewCount || 0) }})
+              }
+            </button>
+          }
+        </div>
+        <div
+          class="detail-panel"
+          role="tabpanel"
+          id="detail-panel"
+          [attr.aria-labelledby]="'tab-' + tab()"
+        >
+          @switch (tab()) {
+            @case ('description') {
+              <div class="description-columns">
+                <div>
+                  <h3>Thông tin sản phẩm</h3>
+                  <div
+                    class="product-prose"
+                    [innerHTML]="
+                      detail.product.description || detail.product.shortDescription || ''
+                    "
+                  ></div>
+                </div>
+                <div class="rating-summary">
+                  <h3>Đánh giá của khách hàng</h3>
+                  <div class="rating-overview">
+                    <div>
+                      <strong>{{ detail.product.rating || '—' }}<small>/5</small></strong>
+                      <div class="stars">★</div>
+                      <p>{{ sold(detail.product.reviewCount || 0) }} đánh giá</p>
+                    </div>
+                    <div class="rating-bars">
+                      @for (
+                        value of ratingBars(
+                          state.extras?.reviews || [],
+                          state.extras?.ratingCounts
+                        );
+                        track $index
+                      ) {
+                        <div>
+                          <span>{{ 5 - $index }} ★</span><i><b [style.width.%]="value"></b></i
+                          ><small>{{ value }}%</small>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                  <button class="button secondary" (click)="tab.set('reviews')">
+                    Xem tất cả đánh giá ({{ sold(detail.product.reviewCount || 0) }})
+                  </button>
+                </div>
+                <div class="detail-mini-reviews">
+                  <h3>Khách hàng nói về sản phẩm</h3>
+                  <div>
+                    @for (review of state.extras?.reviews?.slice(0, 2) || []; track review.id) {
+                      <article>
+                        <div class="mini-review-person">
+                          <div>
+                            <app-reference-art
+                              [src]="review.avatar"
+                              [label]="review.customerName"
+                            />
+                          </div>
+                          <strong
+                            >{{ review.customerName
+                            }}<span class="stars"
+                              >{{ '★'.repeat(review.rating)
+                              }}{{ '☆'.repeat(5 - review.rating) }}</span
+                            ></strong
+                          >
+                        </div>
+                        @if (review.verifiedPurchase) {
+                          <small class="teal">✓ Đã mua hàng</small>
+                        }
+                        <p>{{ review.content }}</p>
+                        <div class="mini-review-product">
+                          <app-reference-art
+                            [src]="review.photo || detail.product.imageUrl"
+                            label="Sản phẩm khách hàng đã mua"
+                          />
+                        </div>
+                      </article>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+            @case ('sizes') {
+              <h2>Bảng size tham khảo</h2>
+              <div
+                class="table-scroll product-prose"
+                [innerHTML]="site.text('product', 'sizeHtml')"
+              ></div>
+            }
+            @case ('reviews') {
+              <h2>Đánh giá từ khách hàng</h2>
+              <div class="review-grid">
+                @for (review of state.extras?.reviews || []; track review.id) {
+                  <article class="review-card">
+                    <div class="review-avatar">
+                      <app-reference-art [src]="review.avatar" [label]="review.customerName" />
+                    </div>
+                    <div>
+                      <strong>{{ review.customerName }}</strong>
+                      <div class="stars">
+                        {{ '★'.repeat(review.rating) }}{{ '☆'.repeat(5 - review.rating) }}
+                      </div>
+                      <p>{{ review.content }}</p>
+                      @if (review.verifiedPurchase) {
+                        <small class="teal">✓ Đã mua hàng</small>
+                      }
+                    </div>
+                  </article>
+                }
+              </div>
+            }
+            @case ('care') {
+              <h2>Hướng dẫn giặt và bảo quản</h2>
+              <div class="product-prose" [innerHTML]="site.text('product', 'careHtml')"></div>
+            }
+          }
+        </div>
+      </section>
+      <section class="store-section related-section">
+        <div class="section-heading">
+          <h2>Sản phẩm liên quan</h2>
+          <a routerLink="/san-pham">Xem tất cả →</a>
+        </div>
+        <div class="product-grid home-product-grid">
+          @for (product of state.related?.data || []; track product.id; let i = $index) {
+            <app-product-card [product]="product" [index]="i" [compact]="true" />
+          }
+        </div>
+      </section>
+      @if (zoom()) {
+        <div class="dialog-backdrop image-lightbox" (click)="zoom.set(false)">
+          <section
+            appDialogFocus
+            role="dialog"
+            aria-modal="true"
+            aria-label="Ảnh sản phẩm"
+            (click)="$event.stopPropagation()"
+            (keydown.escape)="zoom.set(false)"
+          >
+            <button class="icon-button" (click)="zoom.set(false)" aria-label="Đóng ảnh">
+              <app-icon name="close" /></button
+            ><app-reference-art
+              [src]="image() || detail.product.imageUrl || ''"
+              [label]="detail.product.name"
+            />
+          </section>
+        </div>
+      }
+    }
+  }
+</div>

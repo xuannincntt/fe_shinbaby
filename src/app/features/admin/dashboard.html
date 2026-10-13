@@ -1,0 +1,700 @@
+<div class="admin-app">
+  <aside class="adm-sidebar" [class.open]="mobile()">
+    <a class="adm-brand" routerLink="/admin"
+      ><span>S<span>♥</span></span>
+      <div>Shinbaby<small>TRANG QUẢN TRỊ</small></div></a
+    >
+    <a
+      class="adm-nav-link"
+      routerLink="/admin"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      ><app-icon name="grid" />Tổng quan</a
+    >
+    @for (group of groups; track group) {
+      <div class="adm-nav-group">
+        <p>{{ group }}</p>
+        @for (item of resources(group); track item['key']) {
+          <a class="adm-nav-link" [routerLink]="['/admin', item['key']]" routerLinkActive="active"
+            ><app-icon [name]="icon(group)" />{{ item['title'] }}
+            @if (item['key'] === 'reviews' && stats()['pendingReviews']) {
+              <b>{{ stats()['pendingReviews'] }}</b>
+            }
+          </a>
+        }
+        @if (group === 'Nội dung website') {
+          <a class="adm-nav-link" routerLink="/admin/content" routerLinkActive="active"
+            ><app-icon name="heart" />Thiết lập website</a
+          >
+        }
+      </div>
+    }
+    <div class="adm-sidebar-bottom">
+      <app-icon name="shield" /><span
+        >Không gian quản trị riêng<small>Dành cho đội ngũ Shinbaby</small></span
+      >
+    </div>
+  </aside>
+  @if (mobile()) {
+    <button class="adm-mobile-shade" aria-label="Đóng menu" (click)="mobile.set(false)"></button>
+  }
+  <div class="adm-workspace">
+    <header class="adm-topbar">
+      <div>
+        <button class="adm-mobile-button" (click)="mobile.set(!mobile())" aria-label="Menu">
+          <app-icon name="menu" /></button
+        ><span
+          >Không gian làm việc <i>/</i>
+          <strong>{{
+            resource()?.title || (mode() === 'content' ? 'Thiết lập website' : 'Tổng quan')
+          }}</strong></span
+        >
+      </div>
+      <div>
+        <a class="adm-preview" routerLink="/" target="_blank"
+          ><app-icon name="arrow" />Xem website</a
+        >
+        <div class="adm-user">
+          <span>AD</span>
+          <div>
+            Quản trị viên<small>{{ auth.user()?.email }}</small>
+          </div>
+        </div>
+        <button class="adm-logout" (click)="logout()" title="Đăng xuất">
+          <app-icon name="user" /><span>Đăng xuất</span>
+        </button>
+      </div>
+    </header>
+    <main class="adm-main" [class.is-list]="!!resource()" [class.is-content]="mode() === 'content'">
+      @if (error() && !editor()) {
+        <div class="adm-alert error" role="alert">
+          <app-icon name="shield" />{{ error()
+          }}<button (click)="error.set('')" aria-label="Đóng">×</button>
+        </div>
+      }
+      @if (message()) {
+        <div class="adm-alert success" role="status">
+          <app-icon name="check" />{{ message()
+          }}<button (click)="message.set('')" aria-label="Đóng">×</button>
+        </div>
+      }
+      @if (mode() === 'content') {
+        <app-content-editor />
+      } @else if (!resource()) {
+        <div class="adm-page-heading">
+          <div>
+            <p class="adm-eyebrow">SHINBABY WORKSPACE</p>
+            <h1>Tổng quan cửa hàng</h1>
+            <p>Mọi hoạt động của cửa hàng, trong một không gian.</p>
+          </div>
+          <a class="adm-button primary" routerLink="/admin/products"
+            ><app-icon name="plus" />Thêm sản phẩm</a
+          >
+        </div>
+        <section class="adm-welcome">
+          <div>
+            <span>CHÀO MỪNG TRỞ LẠI</span>
+            <h2>Cùng chăm chút cho<br />cửa hàng của bé yêu <b>♡</b></h2>
+            <p>Cập nhật sản phẩm, tạo ưu đãi và kể câu chuyện của Shinbaby.</p>
+            <a routerLink="/admin/content">Chỉnh sửa nội dung website <app-icon name="arrow" /></a>
+          </div>
+          <div class="adm-welcome-art">
+            <app-reference-art src="ref:category-0" label="Thời trang Shinbaby" /><span
+              >Made with love ♡</span
+            >
+          </div>
+        </section>
+        <div class="adm-stat-grid">
+          @for (card of overviewCards; track card.key) {
+            <a class="adm-stat" [routerLink]="['/admin', card.resource]"
+              ><span [class]="'adm-stat-icon ' + card.tone"><app-icon [name]="card.icon" /></span>
+              <p>{{ card.label }}</p>
+              <strong>{{ stats()[card.key] ?? '—' }}</strong
+              ><small>Xem chi tiết <app-icon name="arrow" /></small
+            ></a>
+          }
+        </div>
+        <div class="adm-overview-grid">
+          <section class="adm-panel">
+            <div class="adm-panel-heading">
+              <h2>Đơn hàng gần đây</h2>
+              <a routerLink="/admin/orders">Xem tất cả →</a>
+            </div>
+            <div class="adm-table-scroll">
+              <table class="adm-table">
+                <thead>
+                  <tr>
+                    <th>Mã đơn / khách hàng</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (order of stats()['recentOrders'] || []; track order.id) {
+                    <tr>
+                      <td>
+                        <strong>{{ order.orderNo }}</strong
+                        ><small>{{ order.customerName }}</small>
+                      </td>
+                      <td>{{ order.totalAmount | currency: 'VND' : 'symbol' : '1.0-0' : 'vi' }}</td>
+                      <td>
+                        <span [class]="'adm-status ' + order.status">{{
+                          label(order.status)
+                        }}</span>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="3">
+                        <div class="adm-empty">
+                          <app-icon name="cart" />
+                          <h3>Chưa có đơn hàng</h3>
+                          <p>Đơn từ website sẽ xuất hiện tại đây.</p>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </section>
+          <section class="adm-panel">
+            <div class="adm-panel-heading">
+              <h2>Việc cần chú ý</h2>
+              <app-icon name="bolt" />
+            </div>
+            <a class="adm-task" routerLink="/admin/reviews"
+              ><span class="adm-task-icon amber"><app-icon name="star" /></span>
+              <div>
+                <strong>Đánh giá chờ duyệt</strong
+                ><small>Kiểm tra trước khi hiển thị cho khách</small>
+              </div>
+              <b>{{ stats()['pendingReviews'] || 0 }}</b></a
+            ><a class="adm-task" routerLink="/admin/product_variants"
+              ><span class="adm-task-icon pink"><app-icon name="box" /></span>
+              <div>
+                <strong>Phiên bản sắp hết hàng</strong
+                ><small>Tồn kho còn từ 0 đến 5 sản phẩm</small>
+              </div>
+              <b>{{ stats()['lowStock'] || 0 }}</b></a
+            ><a class="adm-task" routerLink="/admin/leads"
+              ><span class="adm-task-icon green"><app-icon name="headset" /></span>
+              <div>
+                <strong>Yêu cầu tư vấn</strong><small>Đồng hành cùng ba mẹ khi chọn đồ</small>
+              </div>
+              <b>{{ stats()['leads'] || 0 }}</b></a
+            >
+            <div class="adm-revenue">
+              <p>Doanh thu đơn hoàn thành</p>
+              <strong>{{
+                stats()['revenue'] || 0 | currency: 'VND' : 'symbol' : '1.0-0' : 'vi'
+              }}</strong>
+            </div>
+          </section>
+        </div>
+        <div class="adm-overview-grid">
+          <section class="adm-panel">
+            <div class="adm-panel-heading"><h2>Thao tác nhanh</h2></div>
+            <div class="adm-shortcuts">
+              <a routerLink="/admin/campaigns"
+                ><app-icon name="gift" /><strong>Tạo chiến dịch</strong
+                ><small>Lên lịch ưu đãi cho cửa hàng</small></a
+              ><a routerLink="/admin/banners"
+                ><app-icon name="grid" /><strong>Thay banner</strong
+                ><small>Làm mới bộ sưu tập</small></a
+              ><a routerLink="/admin/blog_posts"
+                ><app-icon name="heart" /><strong>Viết bài mới</strong
+                ><small>Chia sẻ cùng ba mẹ</small></a
+              >
+            </div>
+          </section>
+          <section class="adm-panel">
+            <div class="adm-panel-heading">
+              <h2>Hoạt động gần đây</h2>
+              <a routerLink="/admin/audit_logs">Xem lịch sử →</a>
+            </div>
+            <div class="adm-activity">
+              @for (item of stats()['recentActivity'] || []; track $index) {
+                <div>
+                  <span>•</span>
+                  <p>
+                    <strong>{{ item['displayName'] || 'Quản trị viên' }}</strong> ·
+                    {{ label(item['action'])
+                    }}<small
+                      >{{ item['entityType'] }} #{{ item['entityId'] }} ·
+                      {{ item['createdAt'] | date: 'dd/MM HH:mm' }}</small
+                    >
+                  </p>
+                </div>
+              } @empty {
+                <p class="adm-muted">Các thay đổi sẽ được ghi lại tại đây.</p>
+              }
+            </div>
+          </section>
+        </div>
+      } @else if (resource(); as r) {
+        <div class="adm-page-heading">
+          <div>
+            <p class="adm-eyebrow">{{ r.group }}</p>
+            <h1>{{ r.title }}</h1>
+            <p>{{ r.description }}</p>
+          </div>
+          @if (!r.readOnly) {
+            <button class="adm-button primary" (click)="open()">
+              <app-icon name="plus" />Thêm mới
+            </button>
+          }
+        </div>
+        <section class="adm-panel adm-list-panel">
+          <div class="adm-list-toolbar">
+            <form (ngSubmit)="load()">
+              <app-icon name="search" /><input
+                [(ngModel)]="search"
+                name="search"
+                placeholder="Tìm kiếm…"
+                aria-label="Tìm kiếm dữ liệu"
+                maxlength="200"
+              /><button class="adm-button" [disabled]="busy()">Tìm kiếm</button>
+            </form>
+            <span>{{ result()?.meta?.total || 0 }} bản ghi</span
+            ><button class="adm-button" (click)="load()" [disabled]="busy()">Làm mới</button>
+          </div>
+          @if (busy()) {
+            <p class="adm-loading" role="status">Đang tải dữ liệu…</p>
+          }
+          <div
+            class="adm-table-scroll"
+            tabindex="0"
+            role="region"
+            [attr.aria-label]="'Danh sách ' + r.title"
+          >
+            <table class="adm-table">
+              <thead>
+                <tr>
+                  <th class="adm-id">ID</th>
+                  @for (column of columns(); track column.key) {
+                    <th>{{ column.label }}</th>
+                  }
+                  <th class="adm-actions">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of result()?.data || []; track row['id']) {
+                  <tr>
+                    <td class="adm-id">#{{ row['id'] }}</td>
+                    @for (column of columns(); track column.key; let first = $first) {
+                      <td>
+                        @if (first) {
+                          <div class="adm-cell-name">
+                            @if (picture(row)) {
+                              <div class="adm-thumb">
+                                <app-reference-art [src]="picture(row)" label="Ảnh đại diện" />
+                              </div>
+                            }
+                            <strong>{{ cell(row, column.key) }}</strong>
+                          </div>
+                        } @else if (column.key === 'status' || column.key === 'stockStatus') {
+                          <span [class]="'adm-status ' + row[column.key]">{{
+                            cell(row, column.key)
+                          }}</span>
+                        } @else if (column.key.endsWith('At')) {
+                          {{ row[column.key] | date: 'dd/MM/yyyy HH:mm' }}
+                        } @else if (isMoney(column.key)) {
+                          {{ row[column.key] | currency: 'VND' : 'symbol' : '1.0-0' : 'vi' }}
+                        } @else {
+                          {{ cell(row, column.key) }}
+                        }
+                      </td>
+                    }
+                    <td class="adm-actions">
+                      <button class="adm-edit" (click)="open(row)">
+                        {{ r.readOnly ? 'Chi tiết' : 'Chỉnh sửa' }}
+                      </button>
+                      @if (!r.readOnly) {
+                        <button class="adm-delete" (click)="confirm.set(row)">
+                          {{ deletion() }}
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td [attr.colspan]="columns().length + 2">
+                      <div class="adm-empty">
+                        <app-icon [name]="icon(r.group)" />
+                        <h3>Chưa có dữ liệu phù hợp</h3>
+                        <p>Thêm dữ liệu mới hoặc thử một từ khóa khác.</p>
+                        @if (!r.readOnly) {
+                          <button class="adm-button primary" (click)="open()">
+                            Thêm {{ r.title.toLowerCase() }}
+                          </button>
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          @if (result(); as page) {
+            <div class="adm-pagination">
+              <span>Trang {{ page.meta.page }} / {{ page.meta.totalPages || 1 }}</span>
+              <div>
+                <button
+                  class="adm-button"
+                  [disabled]="busy() || page.meta.page <= 1"
+                  (click)="load(page.meta.page - 1)"
+                >
+                  ← Trước</button
+                ><button
+                  class="adm-button"
+                  [disabled]="busy() || page.meta.page >= page.meta.totalPages"
+                  (click)="load(page.meta.page + 1)"
+                >
+                  Sau →
+                </button>
+              </div>
+            </div>
+          }
+        </section>
+      }
+    </main>
+  </div>
+</div>
+@if (editor() && resource(); as r) {
+  <div class="adm-overlay" (click)="!saving() && editor.set(false)">
+    <section
+      class="adm-editor"
+      appDialogFocus
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="editor-title"
+      (click)="$event.stopPropagation()"
+      (keydown.escape)="!saving() && editor.set(false)"
+    >
+      <header>
+        <div>
+          <p class="adm-eyebrow">{{ r.group }}</p>
+          <h2 id="editor-title">
+            {{ r.readOnly ? 'Chi tiết' : selected() ? 'Chỉnh sửa' : 'Thêm mới' }}
+            {{ r.title.toLowerCase() }}
+          </h2>
+        </div>
+        <button
+          class="adm-close"
+          (click)="editor.set(false)"
+          [disabled]="saving()"
+          aria-label="Đóng"
+        >
+          ×
+        </button>
+      </header>
+      @if (error()) {
+        <div class="adm-alert error" role="alert">{{ error() }}</div>
+      }
+      @if (!r.readOnly) {
+        <form class="adm-edit-form" ngNativeValidate (ngSubmit)="save()">
+          <div class="adm-fields">
+            @for (field of r.fields; track field.key) {
+              <label [class.adm-wide]="field.type === 'textarea' || field.type === 'url'"
+                ><span
+                  >{{ field.label }}
+                  @if (field.required) {
+                    <b>*</b>
+                  }
+                </span>
+                @switch (field.type) {
+                  @case ('textarea') {
+                    <textarea
+                      [name]="field.key"
+                      [(ngModel)]="model[camel(field.key)]"
+                      [maxlength]="field.max"
+                      rows="4"
+                    ></textarea>
+                  }
+                  @case ('select') {
+                    <select [name]="field.key" [(ngModel)]="model[camel(field.key)]" required>
+                      @for (option of field.options; track option) {
+                        <option [value]="option">{{ label(option) }}</option>
+                      }
+                    </select>
+                  }
+                  @case ('relation') {
+                    <div class="adm-relation">
+                      <input
+                        #relationSearch
+                        placeholder="Gõ từ khóa rồi bấm tìm"
+                        aria-label="Tìm lựa chọn"
+                      /><button
+                        type="button"
+                        (click)="asyncOptions(field.relation!, relationSearch.value)"
+                      >
+                        <app-icon name="search" />
+                      </button>
+                    </div>
+                    <select
+                      [name]="field.key"
+                      [(ngModel)]="model[camel(field.key)]"
+                      [required]="field.required"
+                    >
+                      <option [ngValue]="''">Chọn {{ field.label.toLowerCase() }}</option>
+                      @for (option of options()[field.relation!] || []; track option['id']) {
+                        <option [ngValue]="+option['id']">
+                          #{{ option['id'] }} · {{ option['label'] }}
+                        </option>
+                      }
+                    </select>
+                  }
+                  @case ('checkbox') {
+                    <div class="adm-checkbox">
+                      <input
+                        type="checkbox"
+                        [name]="field.key"
+                        [(ngModel)]="model[camel(field.key)]"
+                      /><span>Bật / hiển thị</span>
+                    </div>
+                  }
+                  @default {
+                    <input
+                      [type]="field.type === 'url' ? 'text' : field.type"
+                      [name]="field.key"
+                      [(ngModel)]="model[camel(field.key)]"
+                      [required]="field.required"
+                      [attr.maxlength]="field.max || null"
+                      [attr.min]="field.type === 'number' ? 0 : null"
+                      [attr.step]="field.type === 'number' ? 'any' : null"
+                    />
+                    @if (field.type === 'url' && imageField(field.key)) {
+                      <div class="adm-upload">
+                        <input
+                          type="file"
+                          accept="image/png,image/jpeg,image/webp"
+                          (change)="upload($event, camel(field.key))"
+                          aria-label="Tải ảnh từ máy"
+                        /><small>Ảnh PNG, JPG, WebP tối đa 6 MB hoặc dán liên kết ảnh.</small>
+                      </div>
+                      @if (model[camel(field.key)]) {
+                        <div class="adm-image-preview">
+                          <app-reference-art
+                            [src]="model[camel(field.key)]"
+                            label="Xem trước ảnh"
+                          />
+                        </div>
+                      }
+                    }
+                  }
+                }
+              </label>
+            }
+          </div>
+          <div class="adm-form-footer">
+            <button
+              type="button"
+              class="adm-button"
+              (click)="editor.set(false)"
+              [disabled]="saving()"
+            >
+              Hủy</button
+            ><button class="adm-button primary" [disabled]="saving()">
+              {{ saving() ? 'Đang lưu…' : 'Lưu thay đổi' }}
+            </button>
+          </div>
+        </form>
+        @if (selected(); as row) {
+          @if (r.key === 'products') {
+            <div class="adm-related">
+              <h3>Thông tin bán hàng</h3>
+              <p>Lưu sản phẩm trước, sau đó thêm SKU, giá và ảnh để khách có thể đặt hàng.</p>
+              <a
+                class="adm-button"
+                [routerLink]="['/admin/product_variants']"
+                [queryParams]="{ productId: row['id'] }"
+                >Phiên bản & tồn kho →</a
+              ><a
+                class="adm-button"
+                [routerLink]="['/admin/product_media']"
+                [queryParams]="{ productId: row['id'] }"
+                >Quản lý ảnh →</a
+              ><a class="adm-button" [routerLink]="['/san-pham', row['slug']]" target="_blank"
+                >Xem trên website ↗</a
+              >
+            </div>
+          }
+          @if (r.key === 'product_variants') {
+            <div class="adm-related">
+              <h3>Thuộc tính phiên bản</h3>
+              <div class="adm-relation">
+                <input #attributeSearch placeholder="Tìm màu, size hoặc chất liệu…" /><button
+                  type="button"
+                  (click)="searchValues(attributeSearch.value)"
+                >
+                  <app-icon name="search" />
+                </button>
+              </div>
+              <p>Chọn một giá trị cho từng nhóm màu, size, giới tính và chất liệu.</p>
+              <div class="adm-value-options">
+                @for (value of attributeOptions(); track value['id']) {
+                  <label
+                    ><input
+                      type="checkbox"
+                      [checked]="valueIds.includes(+value['id'])"
+                      (change)="toggleValue(+value['id'], $any($event.target).checked)"
+                    />{{ value['value'] }} <small>#{{ value['attributeId'] }}</small></label
+                  >
+                }
+              </div>
+              <button class="adm-button" (click)="saveValues()" [disabled]="saving()">
+                Lưu thuộc tính</button
+              ><a
+                class="adm-button primary"
+                routerLink="/admin/product_prices"
+                [queryParams]="{ variantId: row['id'] }"
+                >Thêm / sửa giá →</a
+              >
+            </div>
+          }
+          @if (r.key === 'campaigns') {
+            <div class="adm-related">
+              <h3>Sản phẩm áp dụng</h3>
+              <div class="adm-relation">
+                <input #campaignSearch placeholder="Tìm sản phẩm…" /><button
+                  type="button"
+                  (click)="asyncOptions('products', campaignSearch.value)"
+                >
+                  <app-icon name="search" />
+                </button>
+              </div>
+              <p>Giá ưu đãi có thể để trống để chỉ đưa sản phẩm vào chương trình.</p>
+              @for (item of linked(); track item['id']) {
+                <div class="adm-linked-item">
+                  <span
+                    >{{ item['name']
+                    }}<small>{{
+                      item['promoPrice'] == null
+                        ? 'Giữ giá hiện tại'
+                        : (item['promoPrice'] | currency: 'VND' : 'symbol' : '1.0-0' : 'vi')
+                    }}</small></span
+                  ><button class="adm-delete" (click)="removeCampaign(item['id'])">Gỡ</button>
+                </div>
+              }
+              <div class="adm-fields">
+                <label
+                  >Sản phẩm<select [(ngModel)]="campaignItem['productId']">
+                    <option [ngValue]="null">Chọn sản phẩm</option>
+                    @for (item of options()['products'] || []; track item['id']) {
+                      <option [ngValue]="+item['id']">{{ item['label'] }}</option>
+                    }
+                  </select></label
+                ><label
+                  >Giá ưu đãi (VND)<input
+                    type="number"
+                    min="0"
+                    [(ngModel)]="campaignItem['promoPrice']" /></label
+                ><label
+                  >Thứ tự<input type="number" min="0" [(ngModel)]="campaignItem['sortOrder']"
+                /></label>
+              </div>
+              <button
+                class="adm-button primary"
+                (click)="addCampaign()"
+                [disabled]="saving() || !campaignItem['productId']"
+              >
+                Lưu sản phẩm áp dụng
+              </button>
+            </div>
+          }
+        }
+      } @else if (selected(); as row) {
+        <div class="adm-readonly">
+          @if (r.key === 'orders') {
+            <h3>Thông tin đơn hàng</h3>
+            <dl>
+              <dt>Mã đơn</dt>
+              <dd>{{ row['orderNo'] }}</dd>
+              <dt>Khách hàng</dt>
+              <dd>{{ row['customerName'] }} · {{ row['phone'] }}</dd>
+              <dt>Địa chỉ</dt>
+              <dd>{{ address() }}</dd>
+              <dt>Tổng tiền</dt>
+              <dd>{{ row['totalAmount'] | currency: 'VND' : 'symbol' : '1.0-0' : 'vi' }}</dd>
+              <dt>Phương thức</dt>
+              <dd>Thanh toán khi nhận hàng (COD)</dd>
+            </dl>
+            <h3>Sản phẩm</h3>
+            @for (item of orderItems(); track $index) {
+              <div class="adm-linked-item">
+                <span
+                  >{{ item['productNameSnapshot']
+                  }}<small>{{ item['skuSnapshot'] }} × {{ item['qty'] }}</small></span
+                ><strong>{{
+                  item['lineTotal'] | currency: 'VND' : 'symbol' : '1.0-0' : 'vi'
+                }}</strong>
+              </div>
+            }
+            <div class="adm-fields">
+              <label
+                >Trạng thái<select [(ngModel)]="orderState">
+                  @for (state of orderStates(); track state) {
+                    <option [value]="state">{{ label(state) }}</option>
+                  }
+                </select></label
+              ><label class="adm-wide"
+                >Ghi chú nội bộ<textarea
+                  [(ngModel)]="orderNote"
+                  maxlength="2000"
+                  rows="3"
+                ></textarea>
+              </label>
+            </div>
+            <button class="adm-button primary" (click)="saveOrder()" [disabled]="saving()">
+              Cập nhật đơn hàng
+            </button>
+          } @else {
+            <dl>
+              @for (item of displayDetails(row); track item['key']) {
+                <dt>{{ item['label'] }}</dt>
+                <dd>{{ item['value'] }}</dd>
+              }
+            </dl>
+            @if (row['afterJson']) {
+              <h3>Chi tiết thay đổi</h3>
+              <pre>{{ row['afterJson'] }}</pre>
+            }
+          }
+        </div>
+      }
+    </section>
+  </div>
+}
+@if (confirm(); as row) {
+  <div class="adm-overlay centered">
+    <section
+      class="adm-confirm"
+      appDialogFocus
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="confirm-title"
+      (keydown.escape)="confirm.set(null)"
+    >
+      <div class="adm-confirm-icon"><app-icon name="shield" /></div>
+      <h2 id="confirm-title">{{ deletion() }} dữ liệu này?</h2>
+      <p>{{ row['name'] || row['title'] || row['sku'] || row['email'] || '#' + row['id'] }}</p>
+      <p class="adm-muted">
+        {{
+          resource()?.deletion === 'delete'
+            ? 'Dữ liệu sẽ bị xóa. Dữ liệu đang được sử dụng có thể không xóa được.'
+            : 'Dữ liệu sẽ ngừng hiển thị trên website và vẫn được giữ trong quản trị.'
+        }}
+      </p>
+      @if (error()) {
+        <p class="adm-alert error">{{ error() }}</p>
+      }
+      <div>
+        <button class="adm-button" (click)="confirm.set(null)" [disabled]="saving()">Giữ lại</button
+        ><button class="adm-button danger" (click)="remove()" [disabled]="saving()">
+          {{ deletion() }}
+        </button>
+      </div>
+    </section>
+  </div>
+}

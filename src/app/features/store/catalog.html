@@ -1,0 +1,248 @@
+<div class="store-page catalog-page wide-shell">
+  <div class="breadcrumb"><a routerLink="/">Trang chủ</a><span>/</span><span>Sản phẩm</span></div>
+  <section class="reference-banner catalog-reference-banner">
+    <app-reference-art
+      [src]="site.banners(home$ | async, 'catalog_banner')[0]?.imageUrl"
+      label="Sản phẩm nổi bật cho bé. Đa dạng mẫu mã, chất lượng an toàn, bé luôn thoải mái mỗi ngày."
+    />
+  </section>
+  <div class="catalog-layout">
+    <aside class="catalog-sidebar">
+      <ng-container *ngTemplateOutlet="filters; context: { filterId: 'desktop' }" />
+    </aside>
+    <section class="catalog-results" aria-label="Danh sách sản phẩm">
+      <div class="catalog-toolbar">
+        <div class="sort-tabs">
+          <button
+            [class.active]="!param('sort') || param('sort') === 'recommended'"
+            (click)="change({ sort: 'recommended' })"
+          >
+            Đề xuất</button
+          ><button
+            [class.active]="param('sort') === 'best_selling'"
+            (click)="change({ sort: 'best_selling' })"
+          >
+            Bán chạy</button
+          ><button [class.active]="param('sort') === 'newest'" (click)="change({ sort: 'newest' })">
+            Mới ra mắt</button
+          ><button
+            [class.active]="param('sort').startsWith('price')"
+            (click)="change({ sort: param('sort') === 'price_asc' ? 'price_desc' : 'price_asc' })"
+          >
+            Giá
+            {{ param('sort') === 'price_asc' ? '↑' : param('sort') === 'price_desc' ? '↓' : '↕' }}
+          </button>
+        </div>
+        <div class="view-controls">
+          <span>Hiển thị:</span
+          ><button
+            class="icon-button"
+            [class.active]="view() === 'grid'"
+            (click)="view.set('grid')"
+            aria-label="Dạng lưới"
+          >
+            <app-icon name="grid" /></button
+          ><button
+            class="icon-button"
+            [class.active]="view() === 'list'"
+            (click)="view.set('list')"
+            aria-label="Dạng danh sách"
+          >
+            <app-icon name="list" />
+          </button>
+        </div>
+        <button class="button secondary filter-toggle" (click)="mobileFilters.set(true)">
+          <app-icon name="filter" /> Bộ lọc
+        </button>
+      </div>
+      @if (param('q')) {
+        <p class="search-summary">Kết quả tìm kiếm cho “{{ param('q') }}”</p>
+      }
+      @if (state$ | async; as state) {
+        @if (state.error) {
+          <p class="notice error">{{ state.error }}</p>
+        }
+        @if (state.result; as result) {
+          <p class="result-count">
+            Hiển thị {{ result.meta.total ? (result.meta.page - 1) * result.meta.limit + 1 : 0 }} -
+            {{ (result.meta.page - 1) * result.meta.limit + result.data.length }} trong
+            {{ result.meta.total }} sản phẩm
+          </p>
+          <div class="product-grid catalog-product-grid" [class.list-view]="view() === 'list'">
+            @for (product of result.data; track product.id; let i = $index) {
+              <app-product-card [product]="product" [index]="i" />
+            } @empty {
+              <div class="empty">
+                <app-icon name="search" />
+                <h2>Chưa tìm thấy sản phẩm phù hợp</h2>
+                <p>Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm nhé.</p>
+                <button class="button secondary" (click)="clear()">Xóa bộ lọc</button>
+              </div>
+            }
+          </div>
+          @if (result.meta.totalPages > 1) {
+            <nav class="pagination" aria-label="Phân trang">
+              <button
+                [disabled]="result.meta.page <= 1"
+                (click)="page(result.meta.page - 1)"
+                aria-label="Trang trước"
+              >
+                ‹
+              </button>
+              @for (n of pages(result.meta.page, result.meta.totalPages); track n) {
+                <button
+                  [class.active]="result.meta.page === n"
+                  [attr.aria-current]="result.meta.page === n ? 'page' : null"
+                  (click)="page(n)"
+                >
+                  {{ n }}
+                </button>
+              }
+              @if (
+                result.meta.totalPages > 5 &&
+                !pages(result.meta.page, result.meta.totalPages).includes(result.meta.totalPages)
+              ) {
+                <span>…</span
+                ><button (click)="page(result.meta.totalPages)">
+                  {{ result.meta.totalPages }}
+                </button>
+              }
+              <button
+                [disabled]="result.meta.page >= result.meta.totalPages"
+                (click)="page(result.meta.page + 1)"
+                aria-label="Trang sau"
+              >
+                ›
+              </button>
+            </nav>
+          }
+        }
+      }
+    </section>
+  </div>
+</div>
+<ng-template #filters let-filterId="filterId">
+  @if (vouchers$ | async; as vouchers) {
+    @if (vouchers[0]; as voucher) {
+      <a class="sidebar-offer" routerLink="/uu-dai"
+        ><app-icon name="gift" />
+        <div>
+          <strong>{{ voucher.name }}</strong
+          ><span>{{
+            voucher.discountType === 'percent'
+              ? 'Giảm ' + voucher.discountValue + '%'
+              : 'Giảm ' + voucher.discountValue.toLocaleString('vi-VN') + 'đ'
+          }}</span>
+        </div></a
+      >
+    }
+  }
+  <a class="sidebar-offer" routerLink="/chinh-sach" fragment="van-chuyen"
+    ><app-icon name="truck" />
+    <div>
+      <strong>{{ site.data()?.trust?.items?.[0]?.title }}</strong
+      ><span>{{ site.data()?.trust?.items?.[0]?.description }}</span>
+    </div></a
+  >
+  <div class="filter-group">
+    <h3>Danh mục sản phẩm</h3>
+    @for (category of categories$ | async; track category.id; let i = $index) {
+      <label class="filter-choice"
+        ><input
+          type="checkbox"
+          [checked]="param('category') === category.slug"
+          (change)="
+            change({ category: param('category') === category.slug ? null : category.slug })
+          "
+        /><span>{{ category.name }}</span>
+        @if (home$ | async; as home) {
+          @for (count of home.categoryCounts; track count.categoryId) {
+            @if (count.categoryId === category.id) {
+              <small>{{ count.total }}</small>
+            }
+          }
+        }
+      </label>
+    }
+  </div>
+  @if (home$ | async; as home) {
+    @for (group of groups; track group.code) {
+      <div class="filter-group">
+        <h3>{{ group.name }}</h3>
+        @for (option of home.filters; track option.attribute + option.code) {
+          @if (option.attribute === group.code) {
+            <label class="filter-choice"
+              ><input
+                type="checkbox"
+                [checked]="param(group.code) === option.code"
+                (change)="
+                  attribute(group.code, param(group.code) === option.code ? null : option.code)
+                "
+              /><span>{{ option.value }}</span></label
+            >
+          }
+        }
+      </div>
+      @if (group.code === 'size') {
+        <ng-container *ngTemplateOutlet="priceFilter; context: { filterId: filterId }" />
+      }
+    }
+  }
+  <div class="filter-group">
+    <h3>Khuyến mãi</h3>
+    @for (option of promotions; track option.code) {
+      <label class="filter-choice"
+        ><input
+          type="checkbox"
+          [checked]="param('promotion') === option.code"
+          (change)="change({ promotion: param('promotion') === option.code ? null : option.code })"
+        /><span>{{ option.label }}</span></label
+      >
+    }
+  </div>
+  <button class="text-button clear-filters" (click)="clear()">Xóa bộ lọc</button>
+</ng-template>
+<ng-template #priceFilter let-filterId="filterId"
+  ><div class="filter-group">
+    <h3>Khoảng giá</h3>
+    @for (range of ranges.slice(1); track range.label) {
+      <label class="filter-choice"
+        ><input
+          type="radio"
+          [name]="filterId + '-price'"
+          [checked]="
+            param('price_min') === (range.min == null ? '' : '' + range.min) &&
+            param('price_max') === (range.max == null ? '' : '' + range.max)
+          "
+          (change)="change({ price_min: range.min, price_max: range.max })"
+        /><span>{{ range.label }}</span></label
+      >
+    }
+  </div></ng-template
+>
+@if (mobileFilters()) {
+  <div class="dialog-backdrop" (click)="mobileFilters.set(false)">
+    <section
+      class="filter-drawer"
+      appDialogFocus
+      role="dialog"
+      aria-modal="true"
+      aria-label="Bộ lọc sản phẩm"
+      (click)="$event.stopPropagation()"
+      (keydown.escape)="mobileFilters.set(false)"
+    >
+      <div class="drawer-heading">
+        <h2>Bộ lọc sản phẩm</h2>
+        <button class="icon-button" (click)="mobileFilters.set(false)" aria-label="Đóng bộ lọc">
+          <app-icon name="close" />
+        </button>
+      </div>
+      <ng-container *ngTemplateOutlet="filters; context: { filterId: 'mobile' }" /><button
+        class="button full"
+        (click)="mobileFilters.set(false)"
+      >
+        Xem sản phẩm
+      </button>
+    </section>
+  </div>
+}

@@ -1,0 +1,69 @@
+@if (data$ | async; as data) {
+  <div class="store-page categories-page wide-shell">
+    <div class="breadcrumb"><a routerLink="/">Trang chủ</a><span>/</span><span>Danh mục</span></div>
+    <section
+      class="reference-banner category-reference-banner"
+      aria-label="Khám phá danh mục sản phẩm"
+    >
+      <app-reference-art
+        [src]="site.banners(data.home, 'category_banner')[0]?.imageUrl"
+        label="Khám phá danh mục sản phẩm. Đa dạng sản phẩm thời trang cho bé yêu."
+      />
+    </section>
+
+    <section class="store-section">
+      <div class="section-heading">
+        <h2>{{ site.text('category', 'title') }}</h2>
+        <a routerLink="/san-pham">Xem tất cả danh mục <app-icon name="arrow" /></a>
+      </div>
+      <div class="category-grid">
+        @for (category of data.categories; track category.id; let i = $index) {
+          <app-category-card
+            [category]="category"
+            [index]="i"
+            [count]="count(data.home, category.id)"
+            [expanded]="true"
+            [tags]="tags(category)"
+          />
+        }
+      </div>
+    </section>
+    <section class="category-promo-grid">
+      @for (banner of site.banners(data.home, 'category_promo'); track $index) {
+        <a class="category-promo-image" [href]="banner.targetUrl || '/san-pham'"
+          ><app-reference-art [src]="banner.imageUrl" [label]="banner.title || ''"
+        /></a>
+      }
+    </section>
+    <section class="store-section">
+      <div class="section-heading">
+        <h2><span class="pink">♨</span> {{ site.text('category', 'popularTitle') }}</h2>
+      </div>
+      <div class="category-quick-links">
+        @for (item of data.categories.slice(0, 6); track item.id) {
+          <a routerLink="/san-pham" [queryParams]="{ category: item.slug }"
+            ><div><app-reference-art [src]="item.imageUrl" [label]="item.name" /></div>
+            <span
+              ><strong>{{ item.name }}</strong
+              ><small>{{ count(data.home, item.id) }} sản phẩm</small></span
+            ></a
+          >
+        }
+      </div>
+    </section>
+    <section class="store-section category-recommendations">
+      <div class="section-heading">
+        <h2>
+          <span class="yellow">★</span> {{ site.text('category', 'recommendTitle') }}
+          <small>{{ site.text('category', 'recommendSubtitle') }}</small>
+        </h2>
+        <a routerLink="/san-pham">Xem thêm sản phẩm <app-icon name="arrow" /></a>
+      </div>
+      <div class="product-grid home-product-grid">
+        @for (product of data.products; track product.id; let i = $index) {
+          <app-product-card [product]="product" [index]="i" [horizontal]="true" />
+        }
+      </div>
+    </section>
+  </div>
+}

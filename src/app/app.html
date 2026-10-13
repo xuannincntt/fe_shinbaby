@@ -1,0 +1,385 @@
+@if (!adminArea()) {
+  <a class="skip-link" href="#main">Chuyển đến nội dung</a>
+  <div class="announcement">
+    <div class="shell announcement-items">
+      @for (item of site.data()?.announcements?.items || []; track $index) {
+        <span><app-icon [name]="item.icon" />{{ item.text }}</span>
+      }
+    </div>
+  </div>
+  <header class="header-wrap">
+    <div class="site-header shell">
+      <button
+        class="icon-button mobile-menu-toggle"
+        (click)="mobileMenu.set(!mobileMenu())"
+        [attr.aria-expanded]="mobileMenu()"
+        aria-label="Mở menu"
+      >
+        <app-icon name="menu" />
+      </button>
+      <a routerLink="/" class="brand" [attr.aria-label]="site.text('brand', 'name') + ' trang chủ'"
+        ><app-reference-art
+          [src]="site.text('brand', 'logoUrl')"
+          [label]="site.text('brand', 'name')"
+          [eager]="true"
+      /></a>
+      <nav
+        class="main-nav"
+        [class.is-open]="mobileMenu()"
+        aria-label="Điều hướng chính"
+        (click)="mobileMenu.set(false)"
+      >
+        @for (item of site.data()?.navigation?.items || []; track $index) {
+          <a
+            [routerLink]="item.href"
+            routerLinkActive="selected"
+            [routerLinkActiveOptions]="{ exact: item.href === '/' }"
+            >{{ item.label }}</a
+          >
+        }
+      </nav>
+      <form class="header-search" (ngSubmit)="search()">
+        <app-icon name="search" /><input
+          name="q"
+          [(ngModel)]="query"
+          placeholder="Tìm kiếm sản phẩm, danh mục…"
+          aria-label="Tìm kiếm sản phẩm"
+          maxlength="200"
+        /><button aria-label="Tìm kiếm"><app-icon name="search" /></button>
+      </form>
+      <div class="header-tools">
+        <a routerLink="/lien-he" class="header-tool hotline"
+          ><app-icon name="headset" /><span
+            ><small>Hotline</small><strong>{{ site.text('brand', 'phone') }}</strong></span
+          ></a
+        ><button class="header-tool" (click)="accountOpen.set(true)">
+          <app-icon name="user" /><span><small>Tài khoản</small>Hỗ trợ đơn hàng</span></button
+        ><button
+          class="header-tool cart-toggle"
+          (click)="cart.open.set(true)"
+          aria-label="Mở giỏ hàng"
+        >
+          <app-icon name="cart" /><span><small>Giỏ</small>Giỏ hàng</span><b>{{ cart.count() }}</b>
+        </button>
+      </div>
+    </div>
+  </header>
+}
+<main id="main" [class.admin-shell]="adminArea()"><router-outlet /></main>
+@if (!adminArea()) {
+  <footer class="site-footer">
+    <div class="shell footer-content">
+      <div class="footer-brand">
+        <a routerLink="/" class="brand"
+          ><app-reference-art
+            [src]="site.text('brand', 'logoUrl')"
+            [label]="site.text('brand', 'name')"
+        /></a>
+        <p>{{ site.text('brand', 'tagline') }}</p>
+      </div>
+      <div>
+        <strong>{{ site.text('footer', 'aboutTitle') }}</strong>
+        @for (item of site.data()?.footer?.aboutLinks || []; track $index) {
+          <a [href]="item.href">{{ item.label }}</a>
+        }
+      </div>
+      <div>
+        <strong>{{ site.text('footer', 'supportTitle') }}</strong>
+        @for (item of site.data()?.footer?.supportLinks || []; track $index) {
+          <a [href]="item.href">{{ item.label }}</a>
+        }
+      </div>
+      <div class="footer-contact">
+        <strong>{{ site.text('footer', 'contactTitle') }}</strong
+        ><a routerLink="/lien-he"><app-icon name="headset" /> {{ site.text('brand', 'phone') }}</a
+        ><a routerLink="/lien-he"><app-icon name="mail" /> {{ site.text('brand', 'email') }}</a
+        ><span><app-icon name="headset" /> {{ site.text('brand', 'hours') }}</span
+        ><span><app-icon name="heart" /> {{ site.text('brand', 'address') }}</span>
+      </div>
+      <div>
+        <strong>{{ site.text('footer', 'socialTitle') }}</strong>
+        <div class="social-links">
+          @for (social of site.data()?.footer?.socials || []; track $index) {
+            @if (social.href) {
+              <a
+                [href]="social.href"
+                target="_blank"
+                rel="noopener noreferrer"
+                [class]="social.className"
+                [attr.aria-label]="social.name"
+                >{{ social.symbol }}</a
+              >
+            } @else {
+              <button
+                [class]="social.className"
+                [attr.aria-label]="social.name"
+                (click)="socialMessage.set('Kênh ' + social.name + ' chưa được cập nhật.')"
+              >
+                {{ social.symbol }}
+              </button>
+            }
+          }
+        </div>
+      </div>
+      <app-newsletter />
+    </div>
+    <div class="footer-bottom wide-shell">
+      <span>© {{ year }} {{ site.text('footer', 'copyright') }}</span
+      ><span>
+        @for (item of site.data()?.footer?.legalLinks || []; track $index) {
+          <a [href]="item.href">{{ item.label }}</a
+          >　
+        }</span
+      ><span class="footer-secure">
+        @for (item of site.data()?.footer?.badges || []; track $index) {
+          <span
+            ><app-icon name="shield" /><b
+              >{{ item.title }}<br /><small>{{ item.description }}</small></b
+            ></span
+          >
+        }
+      </span>
+    </div>
+    @if (demo) {
+      <div class="demo-caption">
+        Bản demo giao diện · Sản phẩm, ưu đãi, đánh giá và thông tin liên hệ là dữ liệu minh họa.
+      </div>
+    }
+  </footer>
+  @if (cart.open()) {
+    <div class="dialog-backdrop" (click)="cart.open.set(false)">
+      <section
+        class="cart-drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cart-title"
+        appDialogFocus
+        (click)="$event.stopPropagation()"
+        (keydown.escape)="cart.open.set(false)"
+      >
+        <div class="drawer-heading">
+          <h2 id="cart-title">Giỏ hàng của bạn</h2>
+          <button class="icon-button" (click)="cart.open.set(false)" aria-label="Đóng giỏ hàng">
+            <app-icon name="close" />
+          </button>
+        </div>
+        @for (line of cart.lines(); track line.variantId) {
+          <div class="cart-line">
+            <div>
+              <strong>{{ line.name }}</strong>
+              <p>{{ line.sku }} · Số lượng {{ line.quantity }}</p>
+              <span class="pink">{{
+                line.price * line.quantity | currency: 'VND' : 'symbol' : '1.0-0' : 'vi'
+              }}</span>
+            </div>
+            <button
+              class="text-button"
+              (click)="cart.remove(line.variantId)"
+              aria-label="Xóa sản phẩm khỏi giỏ"
+            >
+              Xóa
+            </button>
+          </div>
+        } @empty {
+          <div class="empty">
+            <app-icon name="cart" />
+            <h3>Giỏ hàng đang trống</h3>
+            <p>Cùng khám phá những món đồ nhỏ xinh cho bé.</p>
+            <a routerLink="/san-pham" class="button" (click)="cart.open.set(false)"
+              >Khám phá sản phẩm</a
+            >
+          </div>
+        }
+        @if (cart.count()) {
+          <div class="cart-total">
+            <span>Tạm tính</span
+            ><strong>{{ cart.total() | currency: 'VND' : 'symbol' : '1.0-0' : 'vi' }}</strong>
+          </div>
+          <p class="muted">
+            Giá và ưu đãi được kiểm tra lại khi đặt hàng. Thanh toán khi nhận hàng.
+          </p>
+          <button class="button full" (click)="beginCheckout()">
+            Tiếp tục đặt hàng <app-icon name="arrow" />
+          </button>
+        }
+      </section>
+    </div>
+  }
+
+  @if (accountOpen()) {
+    <div class="dialog-backdrop centered-dialog" (click)="accountOpen.set(false)">
+      <section
+        class="account-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="account-title"
+        appDialogFocus
+        (click)="$event.stopPropagation()"
+        (keydown.escape)="accountOpen.set(false)"
+      >
+        <div class="drawer-heading">
+          <h2 id="account-title">Xin chào ba mẹ!</h2>
+          <button class="icon-button" (click)="accountOpen.set(false)" aria-label="Đóng">
+            <app-icon name="close" />
+          </button>
+        </div>
+        <p>
+          Bạn có thể đặt hàng trực tiếp mà không cần tài khoản. Liên hệ
+          {{ site.text('brand', 'phone') }} để được hỗ trợ đơn hàng.
+        </p>
+        <a routerLink="/lien-he" class="button full" (click)="accountOpen.set(false)"
+          >Liên hệ Shinbaby</a
+        >
+      </section>
+    </div>
+  }
+  @if (cart.checkout()) {
+    <div class="dialog-backdrop centered-dialog" (click)="cart.checkout.set(false)">
+      <section
+        class="checkout-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="checkout-title"
+        appDialogFocus
+        (click)="$event.stopPropagation()"
+        (keydown.escape)="cart.checkout.set(false)"
+      >
+        <div class="drawer-heading">
+          <h2 id="checkout-title">Thông tin đặt hàng</h2>
+          <button class="icon-button" (click)="cart.checkout.set(false)" aria-label="Đóng">
+            <app-icon name="close" />
+          </button>
+        </div>
+        @if (orderCode()) {
+          <div class="empty">
+            <span class="order-success">✓</span>
+            <h2>Đã nhận đơn hàng của bạn!</h2>
+            <p>
+              Mã đơn: <strong>{{ orderCode() }}</strong>
+            </p>
+            <p>Shop sẽ liên hệ xác nhận thông tin giao hàng.</p>
+            @if (orderTotal() != null) {
+              <p>
+                Tổng tiền:
+                <strong>{{ orderTotal() | currency: 'VND' : 'symbol' : '1.0-0' : 'vi' }}</strong>
+              </p>
+            }
+            <button class="button" (click)="cart.checkout.set(false)">Tiếp tục mua sắm</button>
+          </div>
+        } @else {
+          <form class="form-stack" ngNativeValidate (ngSubmit)="placeOrder()">
+            <label
+              >Họ và tên<input
+                name="name"
+                [(ngModel)]="orderName"
+                required
+                autocomplete="name" /></label
+            ><label
+              >Số điện thoại<input
+                name="phone"
+                [(ngModel)]="orderPhone"
+                type="tel"
+                pattern="[+0-9 ()-]{8,30}"
+                required
+                autocomplete="tel" /></label
+            ><label
+              >Địa chỉ giao hàng<textarea
+                name="address"
+                [(ngModel)]="orderAddress"
+                required
+                rows="2"
+                autocomplete="street-address"
+              ></textarea>
+            </label>
+            <div class="checkout-voucher">
+              <label
+                >Mã giảm giá<input
+                  name="voucher"
+                  [(ngModel)]="voucherInput"
+                  placeholder="Nhập mã ưu đãi"
+                  maxlength="80" /></label
+              ><button
+                type="button"
+                class="button secondary"
+                (click)="applyVoucher()"
+                [disabled]="voucherBusy()"
+              >
+                Áp dụng
+              </button>
+              @if (cart.voucher()) {
+                <small class="teal">Đang dùng {{ cart.voucher() }}</small
+                ><button
+                  type="button"
+                  class="text-button"
+                  (click)="voucherInput = ''; applyVoucher()"
+                >
+                  Bỏ mã
+                </button>
+              }
+            </div>
+            <div class="checkout-summary">
+              @for (line of cart.lines(); track line.variantId) {
+                <p>
+                  <span>{{ line.name }} × {{ line.quantity }}</span
+                  ><strong>{{
+                    line.price * line.quantity | currency: 'VND' : 'symbol' : '1.0-0' : 'vi'
+                  }}</strong>
+                </p>
+              }
+              <hr />
+              <p>
+                <span>Tạm tính</span
+                ><strong>{{ cart.total() | currency: 'VND' : 'symbol' : '1.0-0' : 'vi' }}</strong>
+              </p>
+              @if (cart.voucher()) {
+                <p class="teal">
+                  <span>Voucher {{ cart.voucher() }}</span
+                  ><strong
+                    >−{{ cart.discount() | currency: 'VND' : 'symbol' : '1.0-0' : 'vi' }}</strong
+                  >
+                </p>
+              }
+              <p>
+                <span>Phí vận chuyển</span
+                ><strong>{{
+                  cart.shipping()
+                    ? (cart.shipping() | currency: 'VND' : 'symbol' : '1.0-0' : 'vi')
+                    : 'Miễn phí'
+                }}</strong>
+              </p>
+              <p class="pink">
+                <span>Tổng thanh toán</span
+                ><strong>{{ cart.payable() | currency: 'VND' : 'symbol' : '1.0-0' : 'vi' }}</strong>
+              </p>
+              <small>Phương thức: Thanh toán khi nhận hàng (COD)</small>
+            </div>
+            @if (orderError()) {
+              <p class="notice error" role="alert">{{ orderError() }}</p>
+            }
+            <small>Giá và ưu đãi cuối cùng được kiểm tra lại khi xác nhận đơn.</small
+            ><button class="button full" [disabled]="orderBusy()">
+              {{ orderBusy() ? 'Đang gửi đơn…' : 'Xác nhận đặt hàng' }}
+            </button>
+          </form>
+        }
+      </section>
+    </div>
+  }
+  @if (socialMessage()) {
+    <div class="dialog-backdrop centered-dialog" (click)="socialMessage.set('')">
+      <section
+        class="account-dialog"
+        appDialogFocus
+        role="dialog"
+        aria-modal="true"
+        aria-label="Kết nối Shinbaby"
+        (click)="$event.stopPropagation()"
+        (keydown.escape)="socialMessage.set('')"
+      >
+        <h2>Kết nối cùng Shinbaby</h2>
+        <p>{{ socialMessage() }}</p>
+        <button class="button full" (click)="socialMessage.set('')">Đã hiểu</button>
+      </section>
+    </div>
+  }
+}

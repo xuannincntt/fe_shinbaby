@@ -1,0 +1,97 @@
+// Shared admin controls and scrollbars also reach nested CMS components.
+app-root.admin-area {
+  --adm-pink: #d92d60;
+  --adm-scroll-thumb: #d1a6b6;
+  --adm-scroll-track: #f7f2f5;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  color-scheme: light;
+
+  &,
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--adm-scroll-thumb) var(--adm-scroll-track);
+  }
+
+  *:hover {
+    scrollbar-color: #bd7692 var(--adm-scroll-track);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--adm-scroll-track);
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--adm-scroll-thumb);
+    border: 3px solid var(--adm-scroll-track);
+    border-radius: 10px;
+    min-height: 36px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #bd7692;
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: var(--adm-scroll-track);
+  }
+
+  :is(button, a, input, select, textarea) {
+    transition:
+      color 160ms ease,
+      background-color 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  :is(button, a, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid #d92d60;
+    outline-offset: 3px;
+  }
+
+  :is(input, textarea)::placeholder {
+    color: #8490a3;
+    opacity: 1;
+  }
+
+  input[type='file']::file-selector-button {
+    border: 1px solid #efd0dd;
+    border-radius: 7px;
+    background: #fff0f5;
+    color: #b52553;
+    padding: 7px 11px;
+    margin-right: 10px;
+    font:
+      600 12px 'Segoe UI',
+      Arial,
+      sans-serif;
+    cursor: pointer;
+  }
+
+  input[type='file']::file-selector-button:hover {
+    background: #ffe3ee;
+  }
+
+  ::selection {
+    background: #fbd8e5;
+    color: #84203f;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  app-root.admin-area :is(button, a, input, select, textarea, .adm-sidebar) {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  app-root.admin-area,
+  app-root.admin-area * {
+    scrollbar-color: auto;
+  }
+}
