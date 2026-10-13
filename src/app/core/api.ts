@@ -2,7 +2,15 @@ import { HttpClient, HttpErrorResponse, HttpInterceptorFn, HttpParams } from '@a
 import { inject, Injectable, InjectionToken } from '@angular/core';
 import { of, defer } from 'rxjs';
 import { DEMO_MODE } from './demo.config';
-import { demoHome, demoList, demoDetail, demoExtras, demoCategories } from './demo-data';
+import {
+  demoHome,
+  demoList,
+  demoDetail,
+  demoExtras,
+  demoCategories,
+  demoPages,
+  demoPosts,
+} from './demo-data';
 import {
   Category,
   Page,
@@ -64,12 +72,13 @@ export class CatalogApi {
       : this.http.get<Voucher[]>('/api/v1/vouchers');
   }
   pages() {
-    return this.http.get<ContentPage[]>('/api/v1/pages');
+    return this.demo ? of(demoPages) : this.http.get<ContentPage[]>('/api/v1/pages');
   }
   blog() {
-    return this.http.get<ContentPage[]>('/api/v1/blog');
+    return this.demo ? of(demoPosts) : this.http.get<ContentPage[]>('/api/v1/blog');
   }
   post(slug: string) {
+    if (this.demo) return of(demoPosts.find((post) => post.slug === slug)!);
     return this.http.get<ContentPage>('/api/v1/blog/' + encodeURIComponent(slug));
   }
   home() {

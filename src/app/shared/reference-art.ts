@@ -94,7 +94,7 @@ export class ReferenceArt {
       return { image: 'none', size: 'cover', position: 'center' };
     const [file, x, y, w, h] = crops[key];
     return {
-      image: 'url(/images/design/' + file + '-reference.png)',
+      image: 'url("images/design/' + file + '-reference.png")',
       size: (1448 / w) * 100 + '% ' + (1086 / h) * 100 + '%',
       position: (x / (1448 - w)) * 100 + '% ' + (y / (1086 - h)) * 100 + '%',
     };

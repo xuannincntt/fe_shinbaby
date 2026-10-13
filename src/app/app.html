@@ -80,13 +80,13 @@
       <div>
         <strong>{{ site.text('footer', 'aboutTitle') }}</strong>
         @for (item of site.data()?.footer?.aboutLinks || []; track $index) {
-          <a [href]="item.href">{{ item.label }}</a>
+          <a [routerLink]="item.href">{{ item.label }}</a>
         }
       </div>
       <div>
         <strong>{{ site.text('footer', 'supportTitle') }}</strong>
         @for (item of site.data()?.footer?.supportLinks || []; track $index) {
-          <a [href]="item.href">{{ item.label }}</a>
+          <a [routerLink]="item.href">{{ item.label }}</a>
         }
       </div>
       <div class="footer-contact">
@@ -127,7 +127,10 @@
       <span>© {{ year }} {{ site.text('footer', 'copyright') }}</span
       ><span>
         @for (item of site.data()?.footer?.legalLinks || []; track $index) {
-          <a [href]="item.href">{{ item.label }}</a
+          <a
+            [routerLink]="item.href.split('#')[0]"
+            [fragment]="item.href.split('#')[1] || undefined"
+            >{{ item.label }}</a
           >　
         }</span
       ><span class="footer-secure">

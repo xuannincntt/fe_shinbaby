@@ -30,9 +30,7 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.scss"
-            ],
+            "styles": ["src/styles.scss"],
             "server": "src/main.server.ts",
             "outputMode": "server",
             "security": {
@@ -57,6 +55,33 @@
                 }
               ],
               "outputHashing": "all"
+            },
+            "github-pages": {
+              "baseHref": "/fe_shinbaby/",
+              "outputMode": "static",
+              "outputHashing": "all",
+              "fileReplacements": [
+                {
+                  "replace": "src/app/core/demo.config.ts",
+                  "with": "src/app/core/demo.config.pages.ts"
+                },
+                {
+                  "replace": "src/app/app.routes.server.ts",
+                  "with": "src/app/app.routes.server.pages.ts"
+                }
+              ],
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "18kB",
+                  "maximumError": "20kB"
+                }
+              ]
             },
             "development": {
               "optimization": false,

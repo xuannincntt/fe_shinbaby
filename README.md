@@ -37,6 +37,7 @@ Workflow `.github/workflows/frontend-ci-cd.yml` chạy khi có pull request ho�
 2. Kiểm tra Prettier và chạy unit test.
 3. Build production Angular SSR và lưu bundle trong GitHub Actions Artifacts trong 14 ngày.
 4. Với push vào `main`, build Docker image và publish lên GitHub Container Registry.
+5. Build bản demo tĩnh và deploy lên https://xuannincntt.github.io/fe_shinbaby/.
 
 Docker image được gắn hai tag:
 
@@ -44,5 +45,7 @@ Docker image được gắn hai tag:
 - `ghcr.io/xuannincntt/fe_shinbaby:sha-<commit>`
 
 Workflow dùng `GITHUB_TOKEN` do GitHub cấp, không cần tạo Personal Access Token. Có thể chạy thủ công từ tab **Actions → Frontend CI/CD → Run workflow**.
+
+Bản GitHub Pages dùng dữ liệu mẫu vì dịch vụ hosting tĩnh không chạy được Spring Boot và Oracle. Bản local, Docker và production SSR vẫn sử dụng backend thật. Cấu hình Pages nằm trong build configuration `github-pages`, với base path `/fe_shinbaby/`.
 
 Việc triển khai image lên máy chủ chưa được tự động hóa vì cần địa chỉ máy chủ và phương thức triển khai cụ thể. Các biến SSR khi chạy container gồm `API_INTERNAL_URL`, `PUBLIC_ORIGIN` và `SSR_ALLOWED_HOSTS`.

@@ -7,6 +7,7 @@ import {
   Page,
   StorefrontHome,
   Review,
+  ContentPage,
 } from './models';
 import { DEMO_NOW } from './demo.config';
 
@@ -308,8 +309,48 @@ export const demoReviews: Review[] = [
     photo: 'ref:review-photo-2',
   },
 ];
+export const demoPages: ContentPage[] = [
+  {
+    title: 'Về Shinbaby',
+    slug: 've-shinbaby',
+    excerpt: 'Thời trang cho bé yêu, an toàn hôm nay và hạnh phúc mai sau.',
+    contentHtml:
+      '<p>Shinbaby mang đến những sản phẩm thời trang mềm mại, thoáng mát và đáng yêu cho bé. Mỗi thiết kế được chọn với mong muốn để bé tự do vui chơi mỗi ngày.</p>',
+  },
+  {
+    title: 'Chính sách đổi trả',
+    slug: 'chinh-sach-doi-tra',
+    contentHtml:
+      '<p>Sản phẩm được hỗ trợ đổi trong 7 ngày khi còn nguyên tem nhãn. Đội ngũ Shinbaby sẽ hướng dẫn chi tiết theo từng đơn hàng.</p>',
+  },
+  {
+    title: 'Chính sách vận chuyển',
+    slug: 'chinh-sach-van-chuyen',
+    contentHtml:
+      '<p>Shinbaby giao hàng toàn quốc và miễn phí vận chuyển cho đơn đạt mức ưu đãi đang áp dụng.</p>',
+  },
+];
+export const demoPosts: ContentPage[] = [
+  {
+    title: 'Cách chọn size quần áo cho bé',
+    slug: 'chon-size-cho-be',
+    excerpt: 'Một vài lưu ý giúp mẹ chọn trang phục vừa vặn và thoải mái cho bé.',
+    coverImageUrl: 'ref:category-large-0',
+    contentHtml:
+      '<p>Ưu tiên số đo chiều cao và cân nặng của bé thay vì chỉ dựa vào độ tuổi. Nếu bé nằm giữa hai size, mẹ có thể chọn size lớn hơn để bé vận động thoải mái.</p>',
+  },
+  {
+    title: 'Chọn chất liệu dịu nhẹ cho làn da bé',
+    slug: 'chat-lieu-diu-nhe',
+    excerpt: 'Cotton mềm, thoáng khí là lựa chọn phù hợp cho sinh hoạt hằng ngày.',
+    coverImageUrl: 'ref:category-large-1',
+    contentHtml:
+      '<p>Trang phục tiếp xúc trực tiếp với da nên có bề mặt mềm, đường may gọn và khả năng thấm hút tốt. Hãy kiểm tra hướng dẫn giặt để giữ quần áo bền đẹp.</p>',
+  },
+];
 export function demoHome(): StorefrontHome {
   return {
+    flashProduct: demoHomeProducts[0],
     serverTime: DEMO_NOW,
     campaigns: [
       {
@@ -347,7 +388,31 @@ export function demoHome(): StorefrontHome {
         value,
       })),
     ],
-    banners: [],
+    banners: [
+      {
+        title: 'Mặc xinh mỗi ngày, lớn khôn hạnh phúc',
+        imageUrl: 'ref:hero',
+        mobileImageUrl: 'ref:hero-people',
+        targetUrl: '/san-pham',
+        placement: 'home_hero',
+      },
+      {
+        title: 'Sản phẩm nổi bật cho bé',
+        imageUrl: 'ref:catalog-banner',
+        placement: 'catalog_banner',
+      },
+      {
+        title: 'Khám phá danh mục sản phẩm',
+        imageUrl: 'ref:category-banner',
+        placement: 'category_banner',
+      },
+      ...[0, 1, 2].map((index) => ({
+        title: ['Bộ đồ xinh xắn', 'Váy xinh điệu đà', 'Quần áo thoáng mát'][index],
+        imageUrl: `ref:promo-${index}`,
+        targetUrl: '/san-pham',
+        placement: 'category_promo',
+      })),
+    ],
   };
 }
 export function demoList(query: Record<string, string | number>): Page<Product> {

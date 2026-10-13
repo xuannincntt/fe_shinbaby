@@ -19,6 +19,9 @@ describe('Presentation catalog', () => {
     expect((await firstValueFrom(api.products())).meta.total).toBe(584);
     expect((await firstValueFrom(api.home())).reviews.length).toBe(3);
     expect((await firstValueFrom(api.detail(demoProducts[0].slug))).variants.length).toBe(30);
+    expect((await firstValueFrom(api.pages())).length).toBeGreaterThan(0);
+    expect((await firstValueFrom(api.blog())).length).toBeGreaterThan(0);
+    expect((await firstValueFrom(api.post('chon-size-cho-be'))).slug).toBe('chon-size-cho-be');
     TestBed.inject(HttpTestingController).expectNone((request) => request.url.startsWith('/api/'));
   });
   it('filters, sorts and paginates a real collection of mock items', () => {

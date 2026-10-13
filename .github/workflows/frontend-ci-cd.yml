@@ -89,3 +89,58 @@ jobs:
           labels: ${{ steps.metadata.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  build-pages:
+    name: Build GitHub Pages demo
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: quality-and-build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Build static customer demo
+        run: npm run build:pages
+
+      - name: Add SPA fallback and disable Jekyll
+        run: |
+          cp dist/shinbaby-web/browser/index.html dist/shinbaby-web/browser/404.html
+          touch dist/shinbaby-web/browser/.nojekyll
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist/shinbaby-web/browser
+
+  deploy-pages:
+    name: Deploy GitHub Pages
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build-pages
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy customer demo
+        id: deployment
+        uses: actions/deploy-pages@v4

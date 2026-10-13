@@ -251,7 +251,7 @@
           }
           <section class="detail-policy-list">
             @for (item of site.data()?.trust?.items || []; track $index) {
-              <a [href]="item.href"
+              <a [routerLink]="item.href"
                 ><app-icon [name]="item.icon" /><span
                   ><strong>{{ item.title }}</strong
                   ><small>{{ item.description }}</small></span
